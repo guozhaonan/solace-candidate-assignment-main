@@ -2,9 +2,19 @@
 
 import { useEffect, useState } from "react";
 
+interface Advocate {
+  firstName: string;
+  lastName: string;
+  city: string;
+  degree: string;
+  specialties: string[];
+  yearsOfExperience: number;
+  phoneNumber: number;
+}
+
 export default function Home() {
-  const [advocates, setAdvocates] = useState([]);
-  const [filteredAdvocates, setFilteredAdvocates] = useState([]);
+  const [advocates, setAdvocates] = useState<Advocate[]>([]);
+  const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
 
   useEffect(() => {
     console.log("fetching advocates...");
@@ -16,10 +26,13 @@ export default function Home() {
     });
   }, []);
 
-  const onChange = (e) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value;
 
-    document.getElementById("search-term").innerHTML = searchTerm;
+    const searchTermElement = document.getElementById("search-term");
+    if (searchTermElement) {
+      searchTermElement.innerHTML = searchTerm;
+    }
 
     console.log("filtering advocates...");
     const filteredAdvocates = advocates.filter((advocate) => {
@@ -28,8 +41,8 @@ export default function Home() {
         advocate.lastName.includes(searchTerm) ||
         advocate.city.includes(searchTerm) ||
         advocate.degree.includes(searchTerm) ||
-        advocate.specialties.includes(searchTerm) ||
-        advocate.yearsOfExperience.includes(searchTerm)
+        advocate.specialties.some(specialty => specialty.includes(searchTerm)) ||
+        advocate.yearsOfExperience.toString().includes(searchTerm)
       );
     });
 
@@ -56,36 +69,52 @@ export default function Home() {
       </div>
       <br />
       <br />
-      <table>
-        <thead>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>City</th>
-          <th>Degree</th>
-          <th>Specialties</th>
-          <th>Years of Experience</th>
-          <th>Phone Number</th>
-        </thead>
-        <tbody>
-          {filteredAdvocates.map((advocate) => {
-            return (
-              <tr>
-                <td>{advocate.firstName}</td>
-                <td>{advocate.lastName}</td>
-                <td>{advocate.city}</td>
-                <td>{advocate.degree}</td>
-                <td>
-                  {advocate.specialties.map((s) => (
-                    <div>{s}</div>
-                  ))}
-                </td>
-                <td>{advocate.yearsOfExperience}</td>
-                <td>{advocate.phoneNumber}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      {filteredAdvocates.length === 0 ? (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '40px', 
+          color: '#666',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          backgroundColor: '#f9f9f9'
+        }}>
+          <h3>No advocates found</h3>
+          <p>Try adjusting your search terms or click "Reset Search" to see all advocates.</p>
+        </div>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>City</th>
+              <th>Degree</th>
+              <th>Specialties</th>
+              <th>Years of Experience</th>
+              <th>Phone Number</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredAdvocates.map((advocate, index) => {
+              return (
+                <tr key={index}>
+                  <td>{advocate.firstName}</td>
+                  <td>{advocate.lastName}</td>
+                  <td>{advocate.city}</td>
+                  <td>{advocate.degree}</td>
+                  <td>
+                    {advocate.specialties.map((s: string) => (
+                      <div key={s}>{s}</div>
+                    ))}
+                  </td>
+                  <td>{advocate.yearsOfExperience}</td>
+                  <td>{advocate.phoneNumber}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
     </main>
   );
 }
