@@ -88,44 +88,87 @@ export default function Home() {
           <p className="text-sm text-gray-500">Try adjusting your search terms or click "Reset Search" to see all advocates.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">First Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Last Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">City</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Degree</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Specialties</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Years of Experience</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Phone Number</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAdvocates.map((advocate, index) => {
-                return (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{advocate.firstName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{advocate.lastName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{advocate.city}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{advocate.degree}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="space-y-1">
-                        {advocate.specialties.map((s: string) => (
-                          <div key={s} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block mr-1 mb-1">{s}</div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{advocate.yearsOfExperience}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatPhoneNumber(advocate.phoneNumber) || 'Invalid phone number'}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                                  <th className="table-header">First Name</th>
+                <th className="table-header">Last Name</th>
+                <th className="table-header">City</th>
+                <th className="table-header">Degree</th>
+                <th className="table-header">Specialties</th>
+                <th className="table-header">Years of Experience</th>
+                <th className="table-header">Phone Number</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredAdvocates.map((advocate, index) => {
+                  return (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="table-cell font-medium">{advocate.firstName}</td>
+                      <td className="table-cell">{advocate.lastName}</td>
+                      <td className="table-cell">{advocate.city}</td>
+                      <td className="table-cell">{advocate.degree}</td>
+                      <td className="table-cell-specialties">
+                        <div className="space-y-1">
+                          {advocate.specialties.map((s: string) => (
+                            <div key={s} className="specialty-tag-inline">{s}</div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="table-cell">{advocate.yearsOfExperience}</td>
+                      <td className="table-cell">
+                        {formatPhoneNumber(advocate.phoneNumber) || 'Invalid phone number'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4">
+            {filteredAdvocates.map((advocate, index) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                                      <h3 className="card-header">
+                    {advocate.firstName} {advocate.lastName}
+                  </h3>
+                  <p className="card-subtitle">{advocate.city}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">{advocate.degree}</p>
+                  <p className="text-xs text-gray-500">{advocate.yearsOfExperience} years</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div>
+                  <span className="card-label">Specialties:</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {advocate.specialties.map((s: string) => (
+                      <span key={s} className="specialty-tag">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <span className="card-label">Phone:</span>
+                  <p className="card-value">
+                    {formatPhoneNumber(advocate.phoneNumber) || 'Invalid phone number'}
+                  </p>
+                </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </main>
   );
