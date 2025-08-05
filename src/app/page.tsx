@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatPhoneNumber } from "../utils/format";
 
 interface Advocate {
   firstName: string;
@@ -55,65 +56,119 @@ export default function Home() {
   };
 
   return (
-    <main style={{ margin: "24px" }}>
-      <h1>Solace Advocates</h1>
-      <br />
-      <br />
-      <div>
-        <p>Search</p>
-        <p>
-          Searching for: <span id="search-term"></span>
+    <main className="m-6">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Solace Advocates</h1>
+      <div className="mb-8">
+        <p className="text-lg font-medium text-gray-700 mb-2">Search</p>
+        <p className="text-sm text-gray-600 mb-4">
+          Searching for: <span id="search-term" className="font-medium text-gray-900"></span>
         </p>
-        <input style={{ border: "1px solid black" }} onChange={onChange} />
-        <button onClick={onClick}>Reset Search</button>
+        <div className="flex gap-4 items-center">
+          <input 
+            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Search advocates..."
+            onChange={onChange} 
+          />
+          <button 
+            onClick={onClick}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
+          >
+            Reset Search
+          </button>
+        </div>
       </div>
-      <br />
-      <br />
       {filteredAdvocates.length === 0 ? (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '40px', 
-          color: '#666',
-          border: '1px solid #ddd',
-          borderRadius: '8px',
-          backgroundColor: '#f9f9f9'
-        }}>
-          <h3>No advocates found</h3>
-          <p>Try adjusting your search terms or click "Reset Search" to see all advocates.</p>
+        <div className="text-center py-10 px-6 text-gray-600 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="mb-4">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No advocates found</h3>
+          <p className="text-sm text-gray-500">Try adjusting your search terms or click "Reset Search" to see all advocates.</p>
         </div>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>City</th>
-              <th>Degree</th>
-              <th>Specialties</th>
-              <th>Years of Experience</th>
-              <th>Phone Number</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAdvocates.map((advocate, index) => {
-              return (
-                <tr key={index}>
-                  <td>{advocate.firstName}</td>
-                  <td>{advocate.lastName}</td>
-                  <td>{advocate.city}</td>
-                  <td>{advocate.degree}</td>
-                  <td>
-                    {advocate.specialties.map((s: string) => (
-                      <div key={s}>{s}</div>
-                    ))}
-                  </td>
-                  <td>{advocate.yearsOfExperience}</td>
-                  <td>{advocate.phoneNumber}</td>
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                                  <th className="table-header">First Name</th>
+                <th className="table-header">Last Name</th>
+                <th className="table-header">City</th>
+                <th className="table-header">Degree</th>
+                <th className="table-header">Specialties</th>
+                <th className="table-header">Years of Experience</th>
+                <th className="table-header">Phone Number</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredAdvocates.map((advocate, index) => {
+                  return (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="table-cell font-medium">{advocate.firstName}</td>
+                      <td className="table-cell">{advocate.lastName}</td>
+                      <td className="table-cell">{advocate.city}</td>
+                      <td className="table-cell">{advocate.degree}</td>
+                      <td className="table-cell-specialties">
+                        <div className="space-y-1">
+                          {advocate.specialties.map((s: string) => (
+                            <div key={s} className="specialty-tag-inline">{s}</div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="table-cell">{advocate.yearsOfExperience}</td>
+                      <td className="table-cell">
+                        {formatPhoneNumber(advocate.phoneNumber) || 'Invalid phone number'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4">
+            {filteredAdvocates.map((advocate, index) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                                      <h3 className="card-header">
+                    {advocate.firstName} {advocate.lastName}
+                  </h3>
+                  <p className="card-subtitle">{advocate.city}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">{advocate.degree}</p>
+                  <p className="text-xs text-gray-500">{advocate.yearsOfExperience} years</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div>
+                  <span className="card-label">Specialties:</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {advocate.specialties.map((s: string) => (
+                      <span key={s} className="specialty-tag">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <span className="card-label">Phone:</span>
+                  <p className="card-value">
+                    {formatPhoneNumber(advocate.phoneNumber) || 'Invalid phone number'}
+                  </p>
+                </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </main>
   );
