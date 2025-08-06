@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { formatPhoneNumber } from "../utils/format";
 
 interface Advocate {
@@ -16,6 +16,8 @@ interface Advocate {
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
   const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     console.log("fetching advocates...");
@@ -27,32 +29,64 @@ export default function Home() {
     });
   }, []);
 
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    (term: string) => {
+      setIsLoading(true);
+      
+      // Simulate a small delay to show loading state
+      setTimeout(() => {
+        const filteredAdvocates = advocates.filter((advocate) => {
+          return (
+            advocate.firstName.toLowerCase().includes(term.toLowerCase()) ||
+            advocate.lastName.toLowerCase().includes(term.toLowerCase()) ||
+            advocate.city.toLowerCase().includes(term.toLowerCase()) ||
+            advocate.degree.toLowerCase().includes(term.toLowerCase()) ||
+            advocate.specialties.some(specialty => 
+              specialty.toLowerCase().includes(term.toLowerCase())
+            ) ||
+            advocate.yearsOfExperience.toString().includes(term)
+          );
+        });
+
+        setFilteredAdvocates(filteredAdvocates);
+        setIsLoading(false);
+      }, 300); // 300ms delay to show loading state
+    },
+    [advocates]
+  );
+
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const searchTerm = e.target.value;
+    const value = e.target.value;
+    setSearchTerm(value);
 
     const searchTermElement = document.getElementById("search-term");
     if (searchTermElement) {
-      searchTermElement.innerHTML = searchTerm;
+      searchTermElement.innerHTML = value;
     }
 
-    console.log("filtering advocates...");
-    const filteredAdvocates = advocates.filter((advocate) => {
-      return (
-        advocate.firstName.includes(searchTerm) ||
-        advocate.lastName.includes(searchTerm) ||
-        advocate.city.includes(searchTerm) ||
-        advocate.degree.includes(searchTerm) ||
-        advocate.specialties.some(specialty => specialty.includes(searchTerm)) ||
-        advocate.yearsOfExperience.toString().includes(searchTerm)
-      );
-    });
+    // Clear previous timeout
+    const timeoutId = setTimeout(() => {
+      if (value.trim()) {
+        debouncedSearch(value);
+      } else {
+        setFilteredAdvocates(advocates);
+        setIsLoading(false);
+      }
+    }, 1000); // 1 second debounce delay
 
-    setFilteredAdvocates(filteredAdvocates);
+    return () => clearTimeout(timeoutId);
   };
 
   const onClick = () => {
-    console.log(advocates);
     setFilteredAdvocates(advocates);
+    setSearchTerm("");
+    setIsLoading(false);
+    
+    const searchTermElement = document.getElementById("search-term");
+    if (searchTermElement) {
+      searchTermElement.innerHTML = "";
+    }
   };
 
   return (
@@ -64,11 +98,22 @@ export default function Home() {
           Searching for: <span id="search-term" className="font-medium text-gray-900"></span>
         </p>
         <div className="flex gap-4 items-center">
-          <input 
-            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Search advocates..."
-            onChange={onChange} 
-          />
+          <div className="relative">
+            <input 
+              className="border border-gray-300 rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Search advocates..."
+              value={searchTerm}
+              onChange={onChange} 
+            />
+            {isLoading && (
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+            )}
+          </div>
           <button 
             onClick={onClick}
             className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
@@ -77,7 +122,18 @@ export default function Home() {
           </button>
         </div>
       </div>
-      {filteredAdvocates.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-10 px-6 text-gray-600 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="mb-4">
+            <svg className="animate-spin mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Searching...</h3>
+          <p className="text-sm text-gray-500">Finding advocates that match your search criteria.</p>
+        </div>
+      ) : filteredAdvocates.length === 0 ? (
         <div className="text-center py-10 px-6 text-gray-600 border border-gray-200 rounded-lg bg-gray-50">
           <div className="mb-4">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
