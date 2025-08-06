@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       const matchesDegree = !degree || advocate.degree.toLowerCase().includes(degree.toLowerCase());
       
       const matchesSpecialties = specialties.length === 0 || 
-        specialties.some(specialty => 
+        specialties.every(specialty => 
           advocate.specialties.some(advocateSpecialty => 
             advocateSpecialty.toLowerCase().includes(specialty.toLowerCase())
           )
@@ -86,20 +86,4 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-}
-
-// Keep GET for backward compatibility or initial load
-export async function GET() {
-  const data = advocateData;
-  return Response.json({ 
-    data,
-    pagination: {
-      currentPage: 1,
-      totalPages: 1,
-      totalCount: data.length,
-      limit: data.length,
-      hasNextPage: false,
-      hasPreviousPage: false
-    }
-  });
 }

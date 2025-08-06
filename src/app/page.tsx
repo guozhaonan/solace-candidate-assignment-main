@@ -54,7 +54,16 @@ export default function Home() {
     let isMounted = true;
     
     console.log("fetching advocates...");
-    fetch("/api/advocates").then((response) => {
+    fetch("/api/advocates", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        page: 1,
+        limit: 10
+      }),
+    }).then((response) => {
       response.json().then((jsonResponse: SearchResponse) => {
         if (isMounted) {
           setAdvocates(jsonResponse.data);
@@ -144,7 +153,16 @@ export default function Home() {
   };
 
   const onClickReset = () => {
-    fetch("/api/advocates").then((response) => {
+    fetch("/api/advocates", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        page: 1,
+        limit: 10
+      }),
+    }).then((response) => {
       response.json().then((jsonResponse: SearchResponse) => {
         setFilteredAdvocates(jsonResponse.data);
         setPagination(jsonResponse.pagination);
@@ -162,26 +180,29 @@ export default function Home() {
 
   const getSearchDescription = () => {
     const activeFilters = [];
+    let advocatePrefix = "advocates";
+    
+    // Handle experience level as adjective
+    if (filters.experienceLevel) {
+      const levelText = {
+        emerging: "Emerging (0-3 years of experience)",
+        established: "Established (4-7 years of experience)", 
+        expert: "Expert (8+ years of experience)"
+      }[filters.experienceLevel];
+      advocatePrefix = `${levelText} advocates`;
+    }
     
     if (filters.city) activeFilters.push(`in ${filters.city}`);
     if (filters.degree) activeFilters.push(`with ${filters.degree} degree`);
-    if (filters.experienceLevel) {
-      const levelText = {
-        emerging: "Emerging (0-3 years)",
-        established: "Established (4-7 years)", 
-        expert: "Expert (8+ years)"
-      }[filters.experienceLevel];
-      activeFilters.push(`with ${levelText} experience`);
-    }
     if (filters.specialties.length > 0) {
       activeFilters.push(`specializing in ${filters.specialties.join(", ")}`);
     }
     
-    if (activeFilters.length === 0) {
+    if (activeFilters.length === 0 && !filters.experienceLevel) {
       return "Showing all advocates";
     }
     
-    return `Showing advocates ${activeFilters.join(" ")}`;
+    return `Showing ${advocatePrefix} ${activeFilters.join(" ")}`;
   };
 
   const handlePageChange = (newPage: number) => {
